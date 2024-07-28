@@ -98,7 +98,7 @@ def process_folderpng(folder,include_subfolders):
             break
             
 def process_atlas_file(atlas_file_path):
-        log_message(f"Processing atlas file: {atlas_file_path}")
+        log_message(f"atlas文件: {atlas_file_path}")
         try:
             with open(atlas_file_path, 'r', encoding='utf-8') as atlas_file:
                 lines = atlas_file.readlines()
@@ -114,18 +114,30 @@ def process_atlas_file(atlas_file_path):
                 if next_line.startswith('size:'):
                     dimensions = next_line.split(':')[1].strip()
                     width, height = map(int, dimensions.split(','))
-                    resize_png(atlas_file_path, png_file_name, width, height)
+                    atlas_dir = os.path.dirname(atlas_file_path)
+                    png_file_path = os.path.join(atlas_dir, png_file_name)
+                    if os.path.exists(png_file_path):
+                        # 打开图片文件
+                        img = Image.open(png_file_path)
+                        img_width, img_height = img.size
+                    
+                        if img_width != width or img_height != height:
+                            resize_png(png_file_path, width, height)
+                        else:
+                            log_message(f"图片{png_file_name} 与atlas描述一致.")
+                    else:
+                        log_message(f"图片{png_file_name} 不存在.")
 
 
-def resize_png( atlas_file_path, png_file_name, width, height):
-        atlas_dir = os.path.dirname(atlas_file_path)
-        png_file_path = os.path.join(atlas_dir, png_file_name)
+
+def resize_png( png_file_path, width, height):
+
         if os.path.exists(png_file_path):
             log_message(f"Resizing {png_file_name} to {width}x{height}")
             with Image.open(png_file_path) as img:
                 resized_img = img.resize((width, height))
                 resized_img.save(png_file_path)
-            log_message(f"Resized {png_file_name} successfully")
+            log_message(f"修改 {png_file_name} 完成")
         else:
             log_message(f"PNG file not found: {png_file_name}")
 
@@ -187,23 +199,23 @@ entry.bind("<FocusOut>", on_focus_out)
 
 # 创建按钮控件
 button1 = tk.Button(window, text="拆分", command=split)
-button1.grid(row=2, column=0, padx=10, pady=10, sticky='ew')
+button1.grid(row=2, column=0, padx=10, pady=10, sticky='nsew')
 
 button2 = tk.Button(window, text="放大", command=enlarge)
-button2.grid(row=2, column=1, padx=10, pady=10, sticky='ew')
+button2.grid(row=2, column=1, padx=10, pady=10, sticky='nsew')
 
 button3 = tk.Button(window, text="合并", command=merge)
-button3.grid(row=3, column=0, padx=10, pady=10, sticky='ew')
+button3.grid(row=3, column=0, padx=10, pady=10, sticky='nsew')
 
 button4 = tk.Button(window, text="替换", command=replace)
-button4.grid(row=3, column=1, padx=10, pady=10, sticky='ew')
+button4.grid(row=3, column=1, padx=10, pady=10, sticky='nsew')
 
 button5 = tk.Button(window, text="png去混淆", command=lambda: pngtool(include_subfolders=include_subfolders_var.get()))
-button5.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky='ew')
+button5.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky='nsew')
 
 # 调整png尺寸同步按钮的大小
 button6 = tk.Button(window, text="png尺寸同步", command=lambda: select_folder(include_subfolders=include_subfolders_var.get()), width=15)
-button6.grid(row=5, column=0, padx=10, pady=10, sticky='ew')
+button6.grid(row=5, column=0, padx=10, pady=10, sticky='nsew')
 
 # 创建复选框用于选择是否包括子文件夹
 include_subfolders_var = tk.BooleanVar(value=True)
@@ -245,17 +257,17 @@ if config.has_section(section_name):
         file_listbox.insert(tk.END, file_name)
 
 # 设置控件的权重
-window.grid_rowconfigure(0, weight=1)
-window.grid_rowconfigure(1, weight=0)
-window.grid_rowconfigure(2, weight=0)
-window.grid_rowconfigure(3, weight=0)
-window.grid_rowconfigure(4, weight=0)
-window.grid_rowconfigure(5, weight=0)
+window.grid_rowconfigure(0, weight=0)
+window.grid_rowconfigure(1, weight=1)
+window.grid_rowconfigure(2, weight=1)
+window.grid_rowconfigure(3, weight=1)
+window.grid_rowconfigure(4, weight=1)
+window.grid_rowconfigure(5, weight=1)
 window.grid_columnconfigure(0, weight=1)
 window.grid_columnconfigure(1, weight=1)
 window.grid_columnconfigure(4, weight=1)
 window.grid_columnconfigure(5, weight=0)
-window.grid_columnconfigure(6, weight=0)
+window.grid_columnconfigure(6, weight=2)
 window.grid_columnconfigure(7, weight=0)
 
 # 运行主循环

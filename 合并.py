@@ -1,8 +1,19 @@
 import os
 import tkinter as tk
 from tkinter import filedialog
+import chardet
+
+
+#判断文件编码格式
+def detect_encoding(file_path):
+    with open(file_path, 'rb') as f:
+        result = chardet.detect(f.read())
+    return result['encoding']
+
 
 def merge_altas_files(input_folder):
+    
+
     # 获取文件夹名称
     folder_name = os.path.basename(input_folder)
 
@@ -14,15 +25,16 @@ def merge_altas_files(input_folder):
         return None  # 返回空值表示没有新文件
 
     altas_files.sort()  # 根据文件名排序
-
+    #print(f"{input_folder}\{altas_files[0]}")
+    encoding = detect_encoding(f'{input_folder}\{altas_files[0]}')
     # 创建新的合并后的文件
     output_file_name = f"new.{folder_name}.atlas"
     output_file_path = os.path.join(input_folder, output_file_name)
 
-    with open(output_file_path, 'w') as output_file:
+    with open(output_file_path, 'w',encoding=encoding) as output_file:
         for altas_file in altas_files:
             altas_file_path = os.path.join(input_folder, altas_file)
-            with open(altas_file_path, 'r') as atlas:
+            with open(altas_file_path, 'r',encoding=encoding) as atlas:
                 atlas_content = atlas.read()
                 output_file.write(atlas_content)
                 output_file.write('\n\n')  # 添加两个空行

@@ -3,6 +3,8 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 import shutil # 用于复制文件
+import chardet
+
 
 def create_folder(folder_path):
     # 创建文件夹
@@ -10,7 +12,13 @@ def create_folder(folder_path):
         os.makedirs(folder_path)
     except FileExistsError:
         pass
-
+        
+#判断文件编码格式        
+def detect_encoding(file_path):
+    with open(file_path, 'rb') as f:
+        result = chardet.detect(f.read())
+    return result['encoding']
+    
 def backup_altas_file(atlas_file):
     # 复制一份atlas文件到同一个目录中，命名为xxx.atlas.bak
     backup_file_name = atlas_file + ".bak"
@@ -18,8 +26,9 @@ def backup_altas_file(atlas_file):
     print("Altas文件已创建完成。")
 
 def create_altas_files(atlas_file):
+    encoding = detect_encoding(atlas_file)
     # 读取atlas文件内容
-    with open(atlas_file, 'r') as f:
+    with open(atlas_file, 'r',encoding=encoding) as f:
         lines = f.readlines()
 
     # 获取文件夹路径
@@ -55,7 +64,7 @@ def create_altas_files(atlas_file):
         image_number = str(image_count).zfill(3)  # 格式化成3位数字，例如001, 002, ...
         current_image_data.insert(0, current_image_name + '.png\n')
         altas_file_name = os.path.join(folder_path, image_number + "_" + current_image_name + ".atlas")
-        with open(altas_file_name, 'w') as altas_file:
+        with open(altas_file_name, 'w',encoding=encoding) as altas_file:
             altas_file.writelines(current_image_data)
     print("Altas文件已完成拆分。")
 

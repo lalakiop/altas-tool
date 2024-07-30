@@ -50,19 +50,26 @@ def replace():
         return
 
     selected_files = [file_listbox.get(idx) for idx in selected_indices]
+    #print(selected_files)
 
     for selected_file in selected_files:
         new_file_name = selected_file
         ini_file_path = config[section_name][new_file_name]
-
         source_path = os.path.join(os.path.dirname(ini_file_path), selected_file)
-        destination_path = os.path.join(os.path.dirname(os.path.dirname(ini_file_path)), new_file_name.replace("new.", ""))
+        if  os.path.exists(source_path):
+            destination_path = os.path.join(os.path.dirname(os.path.dirname(ini_file_path)), new_file_name.replace("new.", ""))
+            shutil.copy(source_path, destination_path)
+            os.remove(source_path)
+            config[section_name][new_file_name] = destination_path
+            file_listbox.delete(selected_indices)
+            log_message(f"替换完成: {new_file_name}")
+        else:
+            log_message(f"文件{new_file_name}不存在")
+            file_listbox.delete(selected_indices)
+            del config[section_name][new_file_name]
+            with open("merged_files.ini", "w", encoding='utf-8') as configfile:
+                config.write(configfile)
 
-        shutil.copy(source_path, destination_path)
-        os.remove(source_path)
-        config[section_name][new_file_name] = destination_path
-        file_listbox.delete(selected_indices)
-        log_message(f"替换完成: {new_file_name}")
 
 # 定义显示结果函数，用于显示合并结果
 def display_result(new_file_name, new_file_path):
